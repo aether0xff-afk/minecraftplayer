@@ -1,0 +1,55 @@
+name: Import legacy v0.4 source
+on:
+  push:
+    paths:
+      - import/chunks/06.b64
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand vetted v0.4 source files
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64,hashlib,json,lzma,pathlib
+          root = pathlib.Path('.').resolve()
+          chunks = [(root / 'import' / 'chunks' / f'{i:02}.b64').read_text().strip() for i in range(7)]
+          payload = lzma.decompress(base64.b64decode(''.join(chunks), validate=True))
+          expected = 'beae14c53428c8bd7e83139a7616badda95a69405a9d77ca4679bef7867dfa14'
+          assert hashlib.sha256(payload).hexdigest() == expected, 'Source bundle SHA mismatch'
+          files = json.loads(payload)
+          allowed = {'package.json','.env.example','MOTOR_V04_README.md','CHECK_WILDPLAYER.cmd','START_WILDPLAYER.cmd'}
+          assert len(files)==27
+          for entry in files:
+              name,content=entry['path'],entry['content']
+              target=(root / name).resolve()
+              assert target.is_relative_to(root), 'Path traversal attempt'
+              assert name in allowed or name.startswith(('src/','tests/','scripts/')), name
+              assert name not in ('README.md','.gitignore')
+              assert not any(x in name.lower() for x in ['credentials','token','session','.env.local','world/'])
+              target.parent.mkdir(parents=True,exist_ok=True)
+              target.write_text(content,encoding='utf-8')
+          print('Imported',len(files),'source files; existing security and project files preserved')
+          PY
+      - name: Commit unpacked source
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json .env.example MOTOR_V04_README.md CHECK_WILDPLAYER.cmd START_WILDPLAYER.cmd src tests scripts
+          git diff --cached --check
+          git commit -m 'feat: import headless WildPlayer v0.4 source, motor and tests'
+          git push
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax check
+        run: npm run check
+      - name: Unit tests
+        run: npm test
