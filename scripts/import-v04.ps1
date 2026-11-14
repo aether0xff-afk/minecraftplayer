@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory = $true)]
-  [string]$SourcePath
+  [string]$SourcePath,
+  [switch]$Publish
 )
 $ErrorActionPreference = "Stop"
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw "Git CLI is required." }
@@ -43,5 +44,13 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "git diff validation failed" }
   Write-Host "Staged source files: " $staged.Count
   Write-Host "Review staged changes with: git diff --cached --stat"
-  Write-Host "No commit/push was performed. This script only stages the source for review."
+  if ($Publish -and $staged.Count -gt 0) {
+    git commit -m "Import existing WildPlayer v0.4 prototype"
+    if ($LASTEXITCODE -ne 0) { throw "git commit failed" }
+    git push origin main
+    if ($LASTEXITCODE -ne 0) { throw "git push failed: check GitHub credentials and branch protection" }
+    Write-Host "Uploaded permitted source files to GitHub. Public CI will run automatically."
+  } else {
+    Write-Host "No commit/push performed. Add -Publish to publish the permitted source."
+  }
 } finally { Pop-Location }
