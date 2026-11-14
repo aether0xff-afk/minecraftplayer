@@ -2,7 +2,7 @@ name: Import legacy v0.4 source
 on:
   push:
     paths:
-      - import/chunks/06.b64
+      - import/chunks/04.b64
 permissions:
   contents: write
 jobs:
@@ -17,7 +17,7 @@ jobs:
           python3 - <<'PY'
           import base64,hashlib,json,lzma,pathlib
           root = pathlib.Path('.').resolve()
-          chunks = [(root / 'import' / 'chunks' / f'{i:02}.b64').read_text().strip() for i in range(7)]
+          chunks = [(root / 'import' / 'chunks' / f'{i:02}.b64').read_text().strip() for i in range(5)]
           payload = lzma.decompress(base64.b64decode(''.join(chunks), validate=True))
           expected = 'beae14c53428c8bd7e83139a7616badda95a69405a9d77ca4679bef7867dfa14'
           assert hashlib.sha256(payload).hexdigest() == expected, 'Source bundle SHA mismatch'
