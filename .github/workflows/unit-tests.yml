@@ -1,5 +1,6 @@
 name: Unit tests (non-game)
 on:
+  workflow_dispatch:
   push:
     paths:
       - "src/**"
@@ -30,6 +31,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Node runtime
+        run: node --version
       - name: Install dependencies
         shell: bash
         run: |
