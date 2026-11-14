@@ -34,19 +34,29 @@ A passing syntax/unit test is **not** enough for release. Completion requires re
 
 **Validated so far in conversation:** headless Minecraft 26.3 server connection via ViaProxy, chat, position and basic waypoint movement. Subsequent motor, planning, crafting and combat code had local unit tests but has **not** been end-to-end verified on the host.
 
-## Repository bootstrap
+## Current implementation and test evidence
 
-This repository was empty when selected. Its initial commit establishes the project contract, source-protection rules, and Windows CI conventions. **The prior v0.4 local prototype has not yet been imported into GitHub**; do not interpret a green workflow as gameplay success.
+The **legacy WildPlayer v0.4 prototype is now imported** into this repository: 27 project files, including the headless bot, planner, survival and combat modules, parallel motor controller, scripts and tests. Previous ZIP-based development artifacts are superseded by the GitHub sources.
 
-The prior tested project's files are available locally on the white PC as `wildplayer-whitepc-26.3-v0.4-parallel-motor`. They should be imported as source (excluding `.env`, `data/`, account files, `tools/*.jar`), reviewed, and then extended with end-to-end tests. No Minecraft credentials are required in GitHub.
+- GitHub Actions import run [#43586054540](https://github.com/aether0xff-afk/minecraftplayer/actions/runs/43586054540): **success**, with **32/32 tests passed** on Ubuntu and the source syntax check passed.
+- These are **unit tests and static checks**. No automatic live Minecraft 26.3 server tests have been performed in GitHub; a passing build does not establish human-level autonomous gameplay.
+- Original chat experiments demonstrated the older headless Mineflayer+ViaProxy setup connecting, chatting and moving on the user's 26.3 server. Subsequent planner, survival and composite motor upgrades remain unverified end-to-end.
 
-### Local commands once source is imported
+### Windows 11 host (white PC)
 
 ```powershell
-npm ci
+git clone https://github.com/aether0xff-afk/minecraftplayer.git
+cd minecraftplayer
+Copy-Item .env.example .env
+notepad .env  # configure the known local ViaProxy / Ollama environment
+npm install
 npm run check
 npm test
 npm start
 ```
 
-Keep the production Minecraft server isolated from any self-hosted CI runner. Run gameplay integration tests in a dedicated nonproduction world/account before release.
+Keep `.env`, authentication sessions, local world files and runtime memory outside Git. The production server must not be used as a self-hosted CI runner. Run gameplay integration checks in a dedicated local test world before changing production behavior.
+
+### Release gate
+
+Do not call this a completed autonomous human-like agent until Minecraft 26.3 integration, long-horizon planning, parallel control, social interaction and reconnect reliability pass repeatable real-world acceptance tests.
