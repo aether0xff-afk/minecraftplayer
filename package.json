@@ -1,0 +1,23 @@
+{
+  "name": "wildplayer-whitepc-26-3",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Minecraft 26.3 headless autonomous player with opt-in parallel motor frames and 20Hz policy API",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/main.js && node --check src/planner.js && node --check src/executor.js && node --check src/survival.js && node --check src/memory.js && node --check src/perception.js && node --check src/combat.js && node --check src/protocol-compat.js && node --check src/tempo.js && node --check src/motor.js",
+    "bench": "node scripts/benchmark.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "dotenv": "16.6.1",
+    "mineflayer": "4.39.0",
+    "mineflayer-pathfinder": "2.4.5",
+    "prismarine-viewer": "1.33.0",
+    "vec3": "0.1.10"
+  }
+}
