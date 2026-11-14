@@ -1,0 +1,46 @@
+name: Unit tests (non-game)
+on:
+  push:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/unit-tests.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/unit-tests.yml"
+permissions:
+  contents: read
+jobs:
+  node:
+    name: Node 22 on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - name: Syntax
+        run: npm run check
+      - name: Unit tests
+        run: npm test
+      - name: Validate no actual server dependency in unit tests
+        shell: bash
+        run: |
+          echo "Unit-test green is NOT proof of Minecraft 26.3 gameplay compatibility."
